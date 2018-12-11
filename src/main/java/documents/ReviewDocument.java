@@ -7,9 +7,9 @@ import org.bson.types.ObjectId;
 
 public class ReviewDocument {
 
-    public final ObjectId id;
-    public final HotelInfo info;
-    public final Reviews[] reviews;
+    private final ObjectId id;
+    private final HotelInfo info;
+    private final Reviews[] reviews;
 
     public ReviewDocument(@JsonProperty("_id") ObjectId _id, @JsonProperty("HotelInfo") HotelInfo info,
                           @JsonProperty("Reviews") Reviews[] reviews) {
