@@ -96,14 +96,14 @@ public class MongoReader {
             }
         }
 
-        writer.write("INSERT INTO " + HOTEL_TABLE_SCHEMA + " " + values(info.getHotelID(), street, locality, postal, region, country,
+        writer.write("INSERT INTO " + HOTEL_TABLE_SCHEMA + " " + values(info.getHotelID(), info.getName(), street, locality, postal, region, country,
                 lowPrice, highPrice, url, info.getImgURL()));
         writer.newLine();
         writer.flush();
     }
 
-    private static final String HOTEL_TABLE_SCHEMA = "hotelinfo('id','name','street','locality','postal','region','country',"
-                                                    + "'priceLow','priceHigh','url','imgURL')";
+    private static final String HOTEL_TABLE_SCHEMA = "hotelinfo(`id`,`name`,`street`,`locality`,`postal`,`region`,`country`,"
+                                                     + "`priceLow`,`priceHigh`,`url`,`imgURL`)";
 
     private static String values(Object... values) {
         StringBuilder builder = new StringBuilder();
