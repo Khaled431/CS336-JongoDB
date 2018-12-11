@@ -111,7 +111,7 @@ public class MongoReader {
 
         for (int index = 0, len = values.length; index < len; index++) {
             Object value = values[index];
-            builder.append(value == null ? "" : "'" + value.toString() + "'");
+            builder.append(value == null ? "" : "'" + value.toString().replace("\'", "\\\'") + "'");
             if (index != len - 1)
                 builder.append(",");
         }
