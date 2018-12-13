@@ -5,6 +5,8 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import documents.ReviewDocument;
 import entity.HotelInfo;
+import entity.Ratings;
+import entity.Review;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import org.jongo.MongoCursor;
@@ -17,6 +19,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 
 public class MongoReader {
 
@@ -25,10 +28,10 @@ public class MongoReader {
             DB db = new MongoClient().getDB("cs336");
 
             Jongo jongo = new Jongo(db);
-            MongoCollection collection = jongo.getCollection("reviews");
+            MongoCollection collection = jongo.getCollection("smaller_reviews");
 
             MongoCursor<ReviewDocument> all = collection.find().as(ReviewDocument.class);
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File("./out.sql")))) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File("./out2.sql")))) {
                 all.forEach(doc -> outStructure(writer, doc));
             }
             System.out.println(all.count());
@@ -39,11 +42,37 @@ public class MongoReader {
 
     private static void outStructure(BufferedWriter writer, ReviewDocument doc) {
         try {
-            writeHotelInfo(writer, doc);
+            //writeHotelInfo(writer, doc);
+            writeReviewInfo(writer, doc);
+            //writeRatingsInfo(writer, doc);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    private static void writeRatingsInfo(BufferedWriter writer, ReviewDocument doc) throws IOException {
+        for (Review review : doc.getReviews()) {
+            Ratings rating = review.getRatings();
+            writer.write("INSERT INTO ratings " + values(review.getReviewID(), rating.getLocation(), rating.getRooms(),
+                    rating.getOverall(), rating.getValue(), rating.getCleanliness(), rating.getSleepQuality(), rating.getService()) + "\n");
+        }
+        writer.flush();
+    }
+
+    private static final String RATING_SCHEMA = "ratings(`review`,`location`,`rooms`,`overall`,`value`, `cleanliness`, `sleepQuality`, 'service')";
+
+    private static void writeReviewInfo(BufferedWriter writer, ReviewDocument doc) throws IOException {
+        for (Review review : doc.getReviews()) {
+            String mySQLDate = MYSQL_FORMAT.format(review.getDate());
+            writer.write("INSERT INTO reviews " + values(review.getReviewID(), doc.getInfo().getHotelID(), review.getAuthor(),
+                    review.getAuthorLocation(), review.getTitle(), review.getContent(), mySQLDate) + "\n");
+        }
+
+        writer.flush();
+    }
+
+    private static final String REVIEW_SCHEMA = "reviews(`id`,`hotelId`,`author`,`authorLocation`,`title`, `content`, `date`)";
+    private static final DateTimeFormatter MYSQL_FORMAT = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:MM:SS");
 
     private static void writeHotelInfo(BufferedWriter writer, ReviewDocument doc) throws IOException {
         HotelInfo info = doc.getInfo();
@@ -96,9 +125,8 @@ public class MongoReader {
             }
         }
 
-        writer.write("INSERT INTO " + HOTEL_TABLE_SCHEMA + " " + values(info.getHotelID(), info.getName(), street, locality, postal, region, country,
-                lowPrice, highPrice, url, info.getImgURL()));
-        writer.newLine();
+        writer.write("INSERT INTO hotelinfo " + values(info.getHotelID(), info.getName(), street, locality, postal, region, country,
+                lowPrice, highPrice, url, info.getImgURL()) + "\n");
         writer.flush();
     }
 
@@ -111,7 +139,7 @@ public class MongoReader {
 
         for (int index = 0, len = values.length; index < len; index++) {
             Object value = values[index];
-            builder.append(value == null ? "''" : "'" + value.toString().replace("\'", "\\\'") + "'");
+            builder.append(value == null ? "''" : "'" + value.toString().replace("\\", "\\\\").replace("\'", "\\\'") + "'");
             if (index != len - 1)
                 builder.append(",");
         }

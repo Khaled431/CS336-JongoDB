@@ -2,17 +2,17 @@ package documents;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import entity.HotelInfo;
-import entity.Reviews;
+import entity.Review;
 import org.bson.types.ObjectId;
 
 public class ReviewDocument {
 
     private final ObjectId id;
     private final HotelInfo info;
-    private final Reviews[] reviews;
+    private final Review[] reviews;
 
     public ReviewDocument(@JsonProperty("_id") ObjectId _id, @JsonProperty("HotelInfo") HotelInfo info,
-                          @JsonProperty("Reviews") Reviews[] reviews) {
+                          @JsonProperty("Reviews") Review[] reviews) {
         this.id = _id;
         this.info = info;
         this.reviews = reviews;
@@ -26,7 +26,7 @@ public class ReviewDocument {
         return info;
     }
 
-    public Reviews[] getReviews() {
+    public Review[] getReviews() {
         return reviews;
     }
 }
